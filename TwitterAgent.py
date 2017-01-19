@@ -31,7 +31,7 @@ class StdOutListener(StreamListener):
 		get_hashtag_data : gets hashtaged tweets
 
 '''
-num_per_hashtag=20
+
 class TwitterAgent(object):
 	def __init__(self, config_file='config.json'):
 		try:
