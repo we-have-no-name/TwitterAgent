@@ -7,12 +7,18 @@ import json
 
 class StdOutListener(StreamListener):
 
+	def __init__(self):
+		self.stream_data = open('Data/stream_data.txt', 'w', encoding='utf-8-sig')
+
 	def on_data(self, data):
-		print(data)
+		self.stream_data.write(data)
 		return True
 
 	def on_error(self, status):
 		print(status)
+
+	def __exit__(self, exc_type, exc_value, traceback):
+		self.stream_data.close()
 
 
 '''
@@ -25,11 +31,11 @@ class StdOutListener(StreamListener):
 		get_hashtag_data : gets hashtaged tweets
 
 '''
-
+num_per_hashtag=20
 class TwitterAgent(object):
-	def __init__(self, config_file):
+	def __init__(self, config_file='config.json'):
 		try:
-			with open('config.json') as json_config_file:
+			with open(config_file) as json_config_file:
 				data = json.load(json_config_file)
 				self.consumer_key = data['consumer_key']
 				self.consumer_secret = data['consumer_secret']
