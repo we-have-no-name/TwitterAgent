@@ -7,9 +7,9 @@ import json
 
 class StdOutListener(StreamListener):
 
-	def __init__(self):
-		self.stream_data = open('Data/stream_data.txt', 'w', encoding='utf-8-sig')
-		self.stream_data_clean = open('Data/stream_data_clean.csv', 'w', encoding='utf-8-sig')
+	def __init__(self, file_name, clean_file_name):
+		self.stream_data = open('Data/' + file_name, 'w', encoding='utf-8-sig')
+		self.stream_data_clean = open('Data/' + clean_file_name, 'w', encoding='utf-8-sig')
 		self.sdata_csv_writer = csv.writer(self.stream_data_clean, lineterminator='\n')
 
 	def on_data(self, data):
@@ -59,20 +59,20 @@ class TwitterAgent(object):
 			print("invaild data for auth")
 		
 	
-	def make_stream_object(self):
-		self.std_listener = StdOutListener()
+	def make_stream_object(self, file_name, clean_file_name):
+		self.std_listener = StdOutListener(file_name, clean_file_name)
 		stream = Stream(self.auth, self.std_listener)
 		return stream
 		
 	
 	def get_sample_stream_tweets(self):
-		stream = self.make_stream_object()
+		stream = self.make_stream_object('sample_stream_data.txt', 'sample_stream_data_clean.csv')
 		return stream.sample()
 			
 	
 	#supports emoji	
 	def get_stream_tweets_with_keywords(self, keywords):
-		stream = self.make_stream_object()
+		stream = self.make_stream_object('stream_data.txt', 'stream_data_clean.csv')
 		return stream.filter(track=keywords)
 
 	#doesn't support emoji
