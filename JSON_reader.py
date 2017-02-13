@@ -7,7 +7,7 @@ def main():
 	test_file = open('Data/test.csv', 'w', encoding='utf-8-sig')
 	csv_writer=csv.writer(test_file, lineterminator='\n')
 	for tweet in data:
-		link = 'www.twitter.com/' + str(tweet['user']['screen_name']) + '/status/' + str(tweet['id'])
+		link = 'www.twitter.com/' + tweet['user']['screen_name'] + '/status/' + str(tweet['id'])
 		tweet = tweet['text']
 		print(link)
 		csv_writer.writerow([link, tweet])
