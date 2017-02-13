@@ -7,16 +7,17 @@ import json
 
 class StdOutListener(StreamListener):
 
-	def __init__(self, file_name, clean_file_name, max_tweets=-1):
+	def __init__(self, file_name, clean_file_name, max_tweets=-1, lang=''):
 		self.count=0
 		self.max_tweets=max_tweets
+		self.lang=lang
 		self.stream_data = open('Data/' + file_name, 'w', encoding='utf-8-sig')
 		self.stream_data_clean = open('Data/' + clean_file_name, 'w', encoding='utf-8-sig')
 		self.sdata_csv_writer = csv.writer(self.stream_data_clean, lineterminator='\n')
 
 	def on_data(self, data):
-		self.stream_data.write(data)
 		tweet_json=json.loads(data)
+		if self.lang!='' and tweet_json['lang']!=self.lang: return True
 		try:
 			link='www.twitter.com/' + tweet_json['user']['screen_name'] + '/status/' + str(tweet_json['id'])
 			tweet= tweet_json['text']
@@ -24,6 +25,7 @@ class StdOutListener(StreamListener):
 			self.sdata_csv_writer.writerow(row)
 		except KeyError:
 			pass
+		self.stream_data.write(data)
 		self.count+=1
 		if self.max_tweets!=-1 and self.count>=self.max_tweets: return False
 		return True
@@ -64,7 +66,7 @@ class TwitterAgent(object):
 		
 	
 	def make_stream_object(self, file_name, clean_file_name):
-		self.std_listener = StdOutListener(file_name, clean_file_name, max_tweets=20)
+		self.std_listener = StdOutListener(file_name, clean_file_name, max_tweets=20, lang='en')
 		stream = Stream(self.auth, self.std_listener)
 		return stream
 		
