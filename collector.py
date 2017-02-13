@@ -5,7 +5,7 @@ def main():
 	ta = TwitterAgent()
 	#get_sample_stream_tweets(ta)
 	#get_hashtag_data(ta, ['play'], 100)
-	get_stream_tweets_with_keywords(ta, ['\U0001F602'])		#use 16 or 32 bit codes for emoji 
+	get_stream_tweets_with_keywords(ta, ['\U0001F602'])		#use 16 or 32 bit codes for unicode (e.g. emoji) 
 	
 
 def get_sample_stream_tweets(ta):

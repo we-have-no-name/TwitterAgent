@@ -7,7 +7,9 @@ import json
 
 class StdOutListener(StreamListener):
 
-	def __init__(self, file_name, clean_file_name):
+	def __init__(self, file_name, clean_file_name, max_tweets=-1):
+		self.count=0
+		self.max_tweets=max_tweets
 		self.stream_data = open('Data/' + file_name, 'w', encoding='utf-8-sig')
 		self.stream_data_clean = open('Data/' + clean_file_name, 'w', encoding='utf-8-sig')
 		self.sdata_csv_writer = csv.writer(self.stream_data_clean, lineterminator='\n')
@@ -22,6 +24,8 @@ class StdOutListener(StreamListener):
 			self.sdata_csv_writer.writerow(row)
 		except KeyError:
 			pass
+		self.count+=1
+		if self.max_tweets!=-1 and self.count>=self.max_tweets: return False
 		return True
 
 	def on_error(self, status):
@@ -60,19 +64,19 @@ class TwitterAgent(object):
 		
 	
 	def make_stream_object(self, file_name, clean_file_name):
-		self.std_listener = StdOutListener(file_name, clean_file_name)
+		self.std_listener = StdOutListener(file_name, clean_file_name, max_tweets=20)
 		stream = Stream(self.auth, self.std_listener)
 		return stream
 		
 	
 	def get_sample_stream_tweets(self):
-		stream = self.make_stream_object('sample_stream_data.txt', 'sample_stream_data_clean.csv')
+		stream = self.make_stream_object('sample_stream_data.txt', clean_file_name='sample_stream_data_clean.csv')
 		return stream.sample()
 			
 	
 	#supports emoji	
 	def get_stream_tweets_with_keywords(self, keywords):
-		stream = self.make_stream_object('stream_data.txt', 'stream_data_clean.csv')
+		stream = self.make_stream_object('stream_data.txt', clean_file_name='stream_data_clean.csv')
 		return stream.filter(track=keywords)
 
 	#doesn't support emoji
