@@ -17,16 +17,16 @@ class StdOutListener(StreamListener):
 
 	def on_data(self, data):
 		tweet_json=json.loads(data)
-		if self.lang!='' and tweet_json['lang']!=self.lang: return True
 		try:
+			if self.lang!='' and tweet_json['lang']!=self.lang: return True
 			link='www.twitter.com/' + tweet_json['user']['screen_name'] + '/status/' + str(tweet_json['id'])
 			tweet= tweet_json['text']
 			row=[link, tweet]
 			self.sdata_csv_writer.writerow(row)
+			self.stream_data.write(data)
+			self.count+=1
 		except KeyError:
 			pass
-		self.stream_data.write(data)
-		self.count+=1
 		if self.max_tweets!=-1 and self.count>=self.max_tweets: return False
 		return True
 
