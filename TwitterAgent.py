@@ -9,9 +9,19 @@ class StdOutListener(StreamListener):
 
 	def __init__(self):
 		self.stream_data = open('Data/stream_data.txt', 'w', encoding='utf-8-sig')
+		self.stream_data_clean = open('Data/stream_data_clean.csv', 'w', encoding='utf-8-sig')
+		self.sdata_csv_writer = csv.writer(self.stream_data_clean, lineterminator='\n')
 
 	def on_data(self, data):
 		self.stream_data.write(data)
+		tweet_json=json.loads(data)
+		try:
+			link='www.twitter.com/' + tweet_json['user']['screen_name'] + '/status/' + str(tweet_json['id'])
+			tweet= tweet_json['text']
+			row=[link, tweet]
+			self.sdata_csv_writer.writerow(row)
+		except KeyError:
+			pass
 		return True
 
 	def on_error(self, status):
@@ -47,19 +57,25 @@ class TwitterAgent(object):
 			self.api = tweepy.API(self.auth)
 		except :
 			print("invaild data for auth")
-
-
+		
+	
 	def make_stream_object(self):
 		self.std_listener = StdOutListener()
 		stream = Stream(self.auth, self.std_listener)
 		return stream
-
-
+		
+	
 	def get_sample_stream_tweets(self):
 		stream = self.make_stream_object()
 		return stream.sample()
+			
+	
+	#supports emoji	
+	def get_stream_tweets_with_keywords(self, keywords):
+		stream = self.make_stream_object()
+		return stream.filter(track=keywords)
 
-
+	#doesn't support emoji
 	def get_hashtag_data(self, hashtags, num_per_hashtag=20):
 		total_hashtaged_tweets = []
 		for hashtag in hashtags :
