@@ -1,5 +1,5 @@
 from TwitterAgent import TwitterAgent
-import csv, json
+import csv, json, os
 
 def main():
 	ta = TwitterAgent()
@@ -22,6 +22,9 @@ def get_hashtag_data(ta, hashtags, count):
 	
 
 def store_hashtag_data(results):
+	if not os.path.exists("Data"):
+    	os.makedirs("Data") 
+    
 	with open('Data/results.csv', 'w', encoding='utf-8-sig') as csv_file:
 		csv_writer = csv.writer(csv_file, lineterminator='\n')
 		for t in results:
