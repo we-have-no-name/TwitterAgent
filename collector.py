@@ -1,11 +1,12 @@
 from TwitterAgent import TwitterAgent
 import csv, json
+from datetime import datetime
 
 def main():
 	ta = TwitterAgent()
 	#get_sample_stream_tweets(ta)
 	#get_hashtag_data(ta, ['play'], 100)
-	get_stream_tweets_with_keywords(ta, ['\U0001F602'])		#use 16 or 32 bit codes for unicode (e.g. emoji) 
+	#get_stream_tweets_with_keywords(ta, ['\U0001F602'])		#use 16 or 32 bit codes for unicode (e.g. emoji) 
 	
 
 def get_sample_stream_tweets(ta):
@@ -22,16 +23,17 @@ def get_hashtag_data(ta, hashtags, count):
 	
 
 def store_hashtag_data(results):
-	with open('Data/results.csv', 'w', encoding='utf-8-sig') as csv_file:
+	ts=' - ' + datetime.utcnow().strftime('%Y%m%dT%H%M%S')
+	with open('Data/results' + ts + '.csv', 'w', encoding='utf-8-sig') as csv_file:
 		csv_writer = csv.writer(csv_file, lineterminator='\n')
 		for t in results:
 			link='www.twitter.com/' + t.user.screen_name + '/status/' + str(t.id)
 			tweet= t.text
 			row=[link, tweet]
 			csv_writer.writerow(row)
-	with open('Data/results_full.json', 'w', encoding='utf-8-sig') as json_full_file:
+	with open('Data/results_full' + ts + '.json', 'w', encoding='utf-8-sig') as json_full_file:
 		json_full_file.write(json.dumps(str(results), ensure_ascii=False))	
-	with open('Data/results.json', 'w', encoding='utf-8-sig') as json_file:
+	with open('Data/results' + ts + '.json', 'w', encoding='utf-8-sig') as json_file:
 		for i in range(len(results)):
 			results[i]=results[i]._json
 		json_file.write(json.dumps(results, ensure_ascii=False))		
