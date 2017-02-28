@@ -4,21 +4,22 @@ from datetime import datetime
 
 def main():
 	ta = TwitterAgent()
-	#get_sample_stream_tweets(ta)
-	#get_hashtag_data(ta, ['play'], 100)
-	#get_stream_tweets_with_keywords(ta, ['\U0001F602'])		#use 16 or 32 bit codes for unicode (e.g. emoji) 
+	#get_sample_tweets_stream(ta)
+	#get_tweets_list_with_hashtags(ta, ['play'], 100)
+	#get_tweets_stream_with_keywords(ta, ['\U0001F602'])		#use 16 or 32 bit codes for unicode (e.g. emoji) 
+	#get_tweets_stream_with_keywords(ta, ['the are'])			#Spaces are ANDs, commas are ORs
 	
 
-def get_sample_stream_tweets(ta):
-	ta.get_sample_stream_tweets()
+def get_sample_tweets_stream(ta):
+	ta.get_sample_tweets_stream()
 	
 
-def get_stream_tweets_with_keywords(ta, keywords):
-	ta.get_stream_tweets_with_keywords(keywords)
+def get_tweets_stream_with_keywords(ta, keywords):
+	ta.get_tweets_stream_with_keywords(keywords)
 	
 
-def get_hashtag_data(ta, hashtags, count):
-	results=ta.get_hashtag_data(hashtags, num_per_hashtag=count)
+def get_tweets_list_with_hashtags(ta, hashtags, count):
+	results=ta.get_tweets_list_with_hashtags(hashtags, num_per_hashtag=count)
 	store_hashtag_data(results)
 	
 
