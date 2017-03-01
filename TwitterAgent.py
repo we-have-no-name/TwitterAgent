@@ -7,7 +7,7 @@ from datetime import datetime
 import os
 
 class stream_data_storage():
-	def __init__(self, file_name, lang='', add_timestamp=True, data_list=[]):
+	def __init__(self, file_name, lang='', add_timestamp=True, data_list=None):
 		self.lang=lang
 		ts=' - ' + datetime.utcnow().strftime('%Y%m%dT%H%M%S') if add_timestamp else ''
 		clean_file_name = file_name + ts + '.csv'
@@ -29,10 +29,7 @@ class stream_data_storage():
 		row=[link, tweet]
 		self.sdata_csv_writer.writerow(row)
 		self.stream_data.write(data)
-		return True
-		
-	def store_to_list(self, data):
-		self.data_list.append(data)
+		if self.data_list is not None: self.data_list.append(data)
 		return True
 		
 	def __exit__(self, exc_type, exc_value, traceback):
@@ -64,8 +61,9 @@ class StdOutListener(StreamListener):
 	own dataset
 	functions:
 		make_stream_object : make a tweepy streemobject
-		get_sample_stream_tweats :  gets realtime tweets
-		get_hashtag_data : gets hashtaged tweets
+		get_sample_tweets_stream :  get realtime tweets
+		get_tweets_stream_with_keywords : get a stream of tweets having the provided keywords (can have emojis)
+		search_for_tweets_with_keywords : search for tweets having the specified keyword(s) one keyword at a time (can't have emojis)
 
 '''
 
@@ -86,38 +84,33 @@ class TwitterAgent(object):
 			print("invaild data for auth")
 		
 	
-	def make_stream_object(self, file_name):
-		data_handler = stream_data_storage(file_name, lang='en', add_timestamp=True)
-		self.std_listener = StdOutListener(data_handler, max_tweets=20)
+	def make_stream_object(self, file_name, lang='en', add_timestamp=True, max_tweets=20, data_list=None):
+		data_handler = stream_data_storage(file_name, lang=lang, add_timestamp=add_timestamp, data_list=data_list)
+		self.std_listener = StdOutListener(data_handler, max_tweets=max_tweets)
 		stream = Stream(self.auth, self.std_listener)
 		return stream
 		
 	
-	def get_sample_tweets_stream(self):
-		stream = self.make_stream_object('sample_stream_data')
-		return stream.sample()
+	def get_sample_tweets_stream(self, file_name='sample_stream_data', lang='en', add_timestamp=True, max_tweets=20, data_list=None):
+		"""get a sample from the stream of tweets flowing through Twitter."""
+		stream = self.make_stream_object(file_name, lang=lang, add_timestamp=add_timestamp, max_tweets=max_tweets, data_list=data_list)
+		stream.sample()
+		return data_list
 			
-	
-	#supports emoji	
-	def get_tweets_stream_with_keywords(self, keywords):
-		stream = self.make_stream_object('stream_data')
-		return stream.filter(track=keywords)
 
-	#doesn't support emoji
-	def get_tweets_list_with_hashtags(self, hashtags, num_per_hashtag=20):
-		total_hashtaged_tweets = []
-		for hashtag in hashtags :
-			hashtag_tweets = self.api.search(hashtag, count=num_per_hashtag, language=["en"])
-			total_hashtaged_tweets.extend(hashtag_tweets)
-		return total_hashtaged_tweets
+	def get_tweets_stream_with_keywords(self, keywords, file_name='stream_data', lang='en', add_timestamp=True, max_tweets=20, data_list=None):
+		"""get a stream of tweets having the provided keywords (can have emojis)"""
+		stream = self.make_stream_object(file_name, lang=lang, add_timestamp=add_timestamp, max_tweets=max_tweets, data_list=data_list)
+		stream.filter(track=keywords)
+		return data_list
 
-
-	def get_emoticon_data(self, emoticons):
-		raise NotImplemented
-
-	def export_to_csv(self):
-		raise NotImplemented
-
+	def search_for_tweets_with_keywords(self, keywords, lang='en', num_per_keyword=20, result_type='mixed'):
+		"""search for tweets having the provided keyword(s) (can't have emojis)"""
+		total_keyworded_tweets = []
+		for keyword in keywords :
+			keyworded_tweets = self.api.search(keyword, count=num_per_keyword, language=[lang], result_type=result_type)
+			total_keyworded_tweets.extend(keyworded_tweets)
+		return total_keyworded_tweets
 	
 
 
