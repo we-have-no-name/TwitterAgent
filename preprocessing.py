@@ -15,33 +15,43 @@ def main():
                 tweet1 = remove_link(tweet1)
                 tweet1 = remove_mentions(tweet1)
                 tweet1 = remove_repeated_chars(tweet1)
-                tweet1 = modify_lowercase_uppercase(tweet1) 
+                tweet1 = modify_lowercase_uppercase(tweet1)
                 wtr.writerow([link, tweet1])
         except:
             continue
-            
+
 def remove_rt(txt):
     txt = txt.replace('RT','')
     return txt
-    
+
 def remove_link(txt):
     urls = re.findall(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', txt)
     for i in range(len(urls)):
         txt=txt.replace(urls[i],'')
     return txt
-    
+
+'''
 def remove_mentions(txt):
     mentions = re.findall(r'(?<=\W)[@]\S*', txt)
     for i in range(len(mentions)):
         txt=txt.replace(mentions[i],'')
     return txt
+'''
+
+
+def remove_mentions(txt):
+    mentions = re.findall(r"@\w+", txt)
+    for i in range(len(mentions)):
+        txt=txt.replace(mentions[i],'')
+    return txt
+
     
 def remove_repeated_chars(txt):
     repeated_char= re.findall(r'((\w)\2{2,})',txt)
     for i  in range(len(repeated_char)):
         txt = txt.replace(repeated_char[i][0],repeated_char[i][1])
     return txt
-    
+
 def modify_lowercase_uppercase(txt):
     text = txt.split(' ')
     for j in range(len(text)):
