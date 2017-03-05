@@ -1,10 +1,7 @@
 from TwitterAgent import TwitterAgent
-<<<<<<< HEAD
-import csv, json, os
-=======
 import csv, json, pickle
+import os
 from datetime import datetime
->>>>>>> m_elagdar
 
 def main():
 	ta = TwitterAgent()
