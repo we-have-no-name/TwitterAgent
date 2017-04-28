@@ -23,7 +23,9 @@ class stream_data_storage():
 		try:
 			if self.lang!='' and tweet_json['lang']!=self.lang: return False
 			link='www.twitter.com/' + tweet_json['user']['screen_name'] + '/status/' + str(tweet_json['id'])
-			tweet= tweet_json['text']
+			if 'retweeted_status' in tweet_json:
+				tweet = "RT @" + tweet_json['retweeted_status']['user']['screen_name'] + ": " + tweet_json['retweeted_status']['text']
+			else: tweet = tweet_json['text']
 		except KeyError:
 			return False
 		row=[link, tweet]
@@ -67,7 +69,7 @@ class StdOutListener(StreamListener):
 
 '''
 
-class TwitterAgent(object):
+class TwitterAgent():
 	def __init__(self, config_file='config.json'):
 		try:
 			with open(config_file) as json_config_file:
@@ -111,8 +113,14 @@ class TwitterAgent(object):
 			keyworded_tweets = self.api.search(keyword, count=num_per_keyword, language=[lang], result_type=result_type)
 			total_keyworded_tweets.extend(keyworded_tweets)
 		return total_keyworded_tweets
-	
-
+		
+	def get_tweets_with_ids(self, ids, batch_size=100):
+		"""returns full Tweet objects, specified by the ids parameter, max batch_size is 100"""
+		tweet_objects = [];
+		for i in range(len(ids)//batch_size+bool(len(ids)%batch_size)):
+			ids_batch = ids[i*batch_size:min(len(ids), (i+1)*batch_size)]
+			tweet_objects += self.api.statuses_lookup(ids_batch)
+		return tweet_objects
 
 
 
