@@ -24,7 +24,7 @@ class tweet_recovery():
 			print("add a reset source file or set fetch_online=True \nexiting.")
 			sys.exit(0)
 		for row in rows:
-			if row[1]=="": continue
+			if len(row)<1: continue
 			tweet_id, = self.links_to_tweet_ids([row[0]])
 			row[1] = id_tweet_map.get(tweet_id, row[1])
 		out_csv_file_name = os.path.splitext(csv_file_name)[0] + "_out.csv"
@@ -58,7 +58,7 @@ class tweet_recovery():
 		csv_reader = csv.reader(csv_file)
 		id_tweet_map = dict()
 		for row in csv_reader:
-			if row[1]=="": continue
+			if len(row)<1: continue
 			tweet_id, = self.links_to_tweet_ids([row[0]])
 			id_tweet_map[tweet_id] = row[1]
 		csv_file.close()
@@ -102,7 +102,7 @@ class tweet_recovery():
 		return rows
 
 	def list_to_csv(self, rows, csv_file_name='tweets.csv'):
-		csv_file = open(csv_file_name, 'w', encoding='utf-8-sig')
+		csv_file = open(csv_file_name, 'w', encoding='utf-8-sig', newline='')
 		csv_writer = csv.writer(csv_file)
 		csv_writer.writerows(rows)
 		csv_file.close()
