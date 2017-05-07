@@ -86,21 +86,38 @@ class TwitterAgent():
 			print("invaild data for auth")
 		
 	
-	def make_stream_object(self, file_name, lang='en', add_timestamp=True, max_tweets=20, data_list=None):
+	def make_stream_object(self, file_name,**kwargs):
+		lang=kwargs.get('lang','en')
+		add_timestamp=kwargs.get('add_timestamp',True)
+		max_tweets=kwargs.get('max_tweets',20)
+		data_list=kwargs.get('data_list',None)
+
 		data_handler = stream_data_storage(file_name, lang=lang, add_timestamp=add_timestamp, data_list=data_list)
 		self.std_listener = StdOutListener(data_handler, max_tweets=max_tweets)
 		stream = Stream(self.auth, self.std_listener)
 		return stream
 		
 	
-	def get_sample_tweets_stream(self, file_name='sample_stream_data', lang='en', add_timestamp=True, max_tweets=20, data_list=None):
+	def get_sample_tweets_stream(self, **kwargs):
+
+		file_name=kwargs.get('file_name', 'sample_stream_data')
+		lang=kwargs.get('lang','en')
+		add_timestamp=kwargs.get('add_timestamp',True)
+		max_tweets=kwargs.get('max_tweets',20)
+		data_list=kwargs.get('data_list',None)
 		"""get a sample from the stream of tweets flowing through Twitter."""
 		stream = self.make_stream_object(file_name, lang=lang, add_timestamp=add_timestamp, max_tweets=max_tweets, data_list=data_list)
 		stream.sample()
 		return data_list
 			
 
-	def get_tweets_stream_with_keywords(self, keywords, file_name='stream_data', lang='en', add_timestamp=True, max_tweets=20, data_list=None):
+	def get_tweets_stream_with_keywords(self, keywords, **kwargs):
+		
+		file_name=kwargs.get('file_name','stream_data')
+		lang=kwargs.get('lang','en')
+		add_timestamp=kwargs.get('add_timestamp',True)
+		max_tweets=kwargs.get('max_tweets',20)
+		data_list=kwargs.get('data_list',None)
 		"""get a stream of tweets having the provided keywords (can have emojis)"""
 		stream = self.make_stream_object(file_name, lang=lang, add_timestamp=add_timestamp, max_tweets=max_tweets, data_list=data_list)
 		stream.filter(track=keywords)

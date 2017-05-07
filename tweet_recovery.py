@@ -10,7 +10,14 @@ class tweet_recovery():
 	def __init__(self):
 		self.c = collector()
 
-	def csv_tweet_recover(self, csv_file_name='tweets.csv', pickle_file_name='tweets.pickle', json_txt_file_name = 'tweets.txt',csv_src_file_name = 'tweets_src.csv', fetch_online=False):
+	def csv_tweet_recover(self,**kwargs):
+		#keywords argument assinment
+		csv_file_name=kwargs.get('csv_file_name','tweets.csv')
+		pickle_file_name=kwargs.get('pickle_file_name','tweets.pickle')
+		json_txt_file_name = kwargs.get('json_txt_file_name','tweets.txt')
+		csv_src_file_name = kwargs.get('csv_src_file_name','tweets_src.csv')
+		fetch_online=kwargs.get('fetch_online',False)
+		
 		rows = self.csv_to_list(csv_file_name)
 		if os.path.isfile(pickle_file_name):
 			id_tweet_map = self.id_tweet_map_from_pickle(pickle_file_name)
@@ -35,7 +42,7 @@ class tweet_recovery():
 		"""returns full Tweet objects, specified by the ids parameter, max batch_size is 100"""
 		rows = self.csv_to_list(csv_file_name)
 		tweet_ids = self.links_to_tweet_ids([row[0] for row in rows if row[1]!=""])
-		return self.c.get_tweets_with_ids(tweet_ids, batch_size = batch_size)
+		return self.c.get_with_ids(tweet_ids, batch_size = batch_size)
 
 	def id_tweet_map_from_pickle(self, pickle_file_name='tweets.pickle'):
 		pickle_file = open(pickle_file_name, 'rb')
