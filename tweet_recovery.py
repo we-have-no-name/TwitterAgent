@@ -4,7 +4,7 @@ import os, sys
 
 def main():
 	csv_o = tweet_recovery()
-	csv_o.csv_tweet_recover(r"tweets.csv", fetch_online=True)
+	csv_o.csv_tweet_recover(r"tweets.csv", fetch_online=False)
 	
 class tweet_recovery():
 	def __init__(self):
@@ -31,7 +31,7 @@ class tweet_recovery():
 			print("add a reset source file or set fetch_online=True \nexiting.")
 			sys.exit(0)
 		for row in rows:
-			if len(row)<1: continue
+			if len(row)<2 or row[1]=='': continue
 			tweet_id, = self.links_to_tweet_ids([row[0]])
 			row[1] = id_tweet_map.get(tweet_id, row[1])
 		out_csv_file_name = os.path.splitext(csv_file_name)[0] + "_out.csv"
@@ -41,8 +41,8 @@ class tweet_recovery():
 	def csv_to_full_objects(self, csv_file_name='tweets.csv', batch_size = 100):
 		"""returns full Tweet objects, specified by the ids parameter, max batch_size is 100"""
 		rows = self.csv_to_list(csv_file_name)
-		tweet_ids = self.links_to_tweet_ids([row[0] for row in rows if row[1]!=""])
-		return self.c.get_with_ids(tweet_ids, batch_size = batch_size)
+		tweet_ids = self.links_to_tweet_ids([row[0] for row in rows if len(row)>1])
+		return self.c.get_tweets_with_ids(tweet_ids, batch_size = batch_size)
 
 	def id_tweet_map_from_pickle(self, pickle_file_name='tweets.pickle'):
 		pickle_file = open(pickle_file_name, 'rb')
@@ -61,11 +61,11 @@ class tweet_recovery():
 		return id_tweet_map
 
 	def id_tweet_map_from_csv(self, csv_file_name='tweets_src.csv'):
-		csv_file = open(csv_file_name, encoding='utf-8-sig')
+		csv_file = open(csv_file_name, encoding='utf-8-sig', newline='')
 		csv_reader = csv.reader(csv_file)
 		id_tweet_map = dict()
 		for row in csv_reader:
-			if len(row)<1: continue
+			if len(row)<2 or row[1]=='': continue
 			tweet_id, = self.links_to_tweet_ids([row[0]])
 			id_tweet_map[tweet_id] = row[1]
 		csv_file.close()
@@ -99,7 +99,7 @@ class tweet_recovery():
 		return tweet_ids
 
 	def csv_to_list(self, csv_file_name='tweets.csv'):
-		csv_file = open(csv_file_name, encoding='utf-8-sig')
+		csv_file = open(csv_file_name, encoding='utf-8-sig', newline='')
 		csv_reader = csv.reader(csv_file)
 		rows=[]
 		for row in csv_reader:
