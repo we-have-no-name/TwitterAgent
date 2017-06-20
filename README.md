@@ -1,5 +1,5 @@
 # TwitterAgent
----
+
 simple twitter agent to help collect tweets for our Data set
 
 ### Requirements
@@ -20,7 +20,7 @@ and pass it to the TwitterAgent object
 agent = TwitterAgent("config.json")
 
 ```
----
+
 ### Example usage
 ```python
 import TwitterAgent
