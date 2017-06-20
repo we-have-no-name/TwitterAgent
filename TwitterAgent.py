@@ -57,7 +57,9 @@ class StdOutListener(StreamListener):
 		if no_error is not False:
 			if (self.data_list is not None): self.data_list.append(data)
 			self.count+=1
-			if self.max_tweets!=-1 and self.count>=self.max_tweets: return False
+			if self.max_tweets!=-1 and self.count>=self.max_tweets:
+				del(self.storage_agent)
+				return False
 		return True
 
 	def on_error(self, status):
@@ -130,7 +132,10 @@ class TwitterAgent():
 			json.dump(results_json, json_file, ensure_ascii=False)
 	
 	def get_sample_tweets_stream(self, **kwargs):
-		"""get a sample from the stream of tweets flowing through Twitter."""
+		"""
+		get a sample from the stream of tweets flowing through Twitter.
+		optionally pass a data_handler object with method append(data)
+		"""
 		file_name=kwargs.get('file_name', 'sample_stream_data')
 		lang=kwargs.get('lang','en')
 		add_timestamp=kwargs.get('add_timestamp',True)
@@ -145,6 +150,7 @@ class TwitterAgent():
 	def get_tweets_stream_with_keywords(self, keywords, **kwargs):
 		"""
 		get a stream of tweets having the provided keywords (can have emojis)
+		optionally pass a data_handler object with method append(data)
 		use 16 or 32 bit codes for unicode (e.g. emoji='\U0001F602')
 		Spaces are ANDs, commas are ORs
 		pass a data list to append stream data to
