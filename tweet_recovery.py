@@ -1,5 +1,5 @@
 import csv, pickle, json
-from collector import collector
+from TwitterAgent import TwitterAgent
 import os, sys
 
 def main():
@@ -8,7 +8,7 @@ def main():
 	
 class tweet_recovery():
 	def __init__(self):
-		self.c = collector()
+		self.ta = TwitterAgent()
 
 	def csv_tweet_recover(self,**kwargs):
 		#keywords argument assinment
@@ -42,7 +42,7 @@ class tweet_recovery():
 		"""returns full Tweet objects, specified by the ids parameter, max batch_size is 100"""
 		rows = self.csv_to_list(csv_file_name)
 		tweet_ids = self.links_to_tweet_ids([row[0] for row in rows if len(row)>1])
-		return self.c.get_tweets_with_ids(tweet_ids, batch_size = batch_size)
+		return self.ta.get_tweets_with_ids(tweet_ids, batch_size = batch_size)
 
 	def id_tweet_map_from_pickle(self, pickle_file_name='tweets.pickle'):
 		pickle_file = open(pickle_file_name, 'rb')

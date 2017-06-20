@@ -2,12 +2,14 @@ import tweepy
 from tweepy.streaming import StreamListener
 from tweepy import OAuthHandler
 from tweepy import Stream
-import csv, json
+import csv, json, pickle
 from datetime import datetime
 import os
 
 class stream_data_storage():
+	'''stores json tweet strings to files'''
 	def __init__(self, file_name, lang='', add_timestamp=True, data_list=None):
+		'''open the files needed for storage'''
 		self.lang=lang
 		ts=' - ' + datetime.utcnow().strftime('%Y%m%dT%H%M%S') if add_timestamp else ''
 		clean_file_name = file_name + ts + '.csv'
@@ -18,7 +20,8 @@ class stream_data_storage():
 		self.sdata_csv_writer = csv.writer(self.stream_data_clean, lineterminator='\n')
 		self.data_list=data_list
 		
-	def write(self, data):
+	def append(self, data):
+		'''receives a json tweet string and write it to the files'''
 		tweet_json=json.loads(data)
 		try:
 			if self.lang!='' and tweet_json['lang']!=self.lang: return False
@@ -33,44 +36,45 @@ class stream_data_storage():
 		self.stream_data.write(data)
 		if self.data_list is not None: self.data_list.append(data)
 		return True
-		
-	def __exit__(self, exc_type, exc_value, traceback):
-		self.stream_data.close()
-		self.stream_data_clean.close()
-
 
 
 class StdOutListener(StreamListener):
-	
+	'''specifies how tweet json strings from a tweepy stream are handled'''
 	def __init__(self, data_handler, max_tweets=-1):
+		'''sets the object's data handler'''
 		self.count=0
 		self.max_tweets=max_tweets
 		self.data_handler=data_handler
 
 	def on_data(self, data):
-		if self.data_handler.write(data): 
+		'''accepts a tweet json string and passes it to the data handler'''
+		try:
+			success=self.data_handler.append(data)
+		except AttributeError as err:
+			raise AttributeError("please pass a data_handler object that has a method append(data)")
+		if success: 
 			self.count+=1
 			if self.max_tweets!=-1 and self.count>=self.max_tweets: return False
 		return True
 
 	def on_error(self, status):
 		print(status)
+	
 
-
-'''
-	TwitterAgent is a simple class that works as a wrapper 
-	for dealing with tweets and data from twitter and make your
-	own dataset
+class TwitterAgent():
+	'''
+	TwitterAgent is a simple class that works as a wrapper for tweepy
+	for dealing with tweets and data from twitter and making your own dataset
 	functions:
 		make_stream_object : make a tweepy streemobject
 		get_sample_tweets_stream :  get realtime tweets
 		get_tweets_stream_with_keywords : get a stream of tweets having the provided keywords (can have emojis)
 		search_for_tweets_with_keywords : search for tweets having the specified keyword(s) one keyword at a time (can't have emojis)
+		get_tweets_with_ids : get tweets object using their ids
 
-'''
-
-class TwitterAgent():
+	'''
 	def __init__(self, config_file='config.json'):
+		'''initializes authentication for the twitter API'''
 		try:
 			with open(config_file) as json_config_file:
 				data = json.load(json_config_file)
@@ -84,76 +88,95 @@ class TwitterAgent():
 			self.api = tweepy.API(self.auth)
 		except :
 			print("invaild data for auth")
-		
 	
 	def make_stream_object(self, file_name,**kwargs):
+		"""initializes a stream and a data handler."""
 		lang=kwargs.get('lang','en')
 		add_timestamp=kwargs.get('add_timestamp',True)
 		max_tweets=kwargs.get('max_tweets',20)
+		save_to_files=kwargs.get('save_to_files',True)
+		data_handler=kwargs.get('data_handler',None)
 		data_list=kwargs.get('data_list',None)
 
-		data_handler = stream_data_storage(file_name, lang=lang, add_timestamp=add_timestamp, data_list=data_list)
+		if data_handler is None:
+			if save_to_files:
+				data_handler = stream_data_storage(file_name, lang=lang, add_timestamp=add_timestamp, data_list=data_list)
+			elif data_list is not None:
+				data_handler = data_list
 		self.std_listener = StdOutListener(data_handler, max_tweets=max_tweets)
 		stream = Stream(self.auth, self.std_listener)
 		return stream
-		
+	
+	def store_list_of_objects(self, results):
+		"""stores tweet objects in files."""
+		ts=' - ' + datetime.utcnow().strftime('%Y%m%dT%H%M%S')
+		if not os.path.exists("Data"): os.makedirs("Data") 
+		with open('Data/results' + ts + '.csv', 'w', encoding='utf-8-sig') as csv_file:
+			csv_writer = csv.writer(csv_file, lineterminator='\n')
+			for t in results:
+				link='www.twitter.com/' + t.user.screen_name + '/status/' + str(t.id)
+				if hasattr(t, 'retweeted_status'):
+					tweet = "RT @" + t.retweeted_status.user.screen_name + ": " + t.retweeted_status.text
+				else: tweet = t.text
+				row=[link, tweet]
+				csv_writer.writerow(row)
+		with open('Data/results_full' + ts + '.pickle', 'wb') as pickle_full_file:
+			pickle.dump(results, pickle_full_file)
+		with open('Data/results' + ts + '.json', 'w', encoding='utf-8-sig') as json_file:
+			results_json=[]
+			for i in range(len(results)):
+				results_json.append(results[i]._json)
+			json.dump(results_json, json_file, ensure_ascii=False)
 	
 	def get_sample_tweets_stream(self, **kwargs):
-
+		"""get a sample from the stream of tweets flowing through Twitter."""
 		file_name=kwargs.get('file_name', 'sample_stream_data')
 		lang=kwargs.get('lang','en')
 		add_timestamp=kwargs.get('add_timestamp',True)
 		max_tweets=kwargs.get('max_tweets',20)
+		save_to_files=kwargs.get('save_to_files',True)
+		data_handler=kwargs.get('data_handler',None)
 		data_list=kwargs.get('data_list',None)
-		"""get a sample from the stream of tweets flowing through Twitter."""
-		stream = self.make_stream_object(file_name, lang=lang, add_timestamp=add_timestamp, max_tweets=max_tweets, data_list=data_list)
+		stream = self.make_stream_object(file_name, lang=lang, add_timestamp=add_timestamp, max_tweets=max_tweets, save_to_files=save_to_files, data_handler=data_handler, data_list=data_list)
 		stream.sample()
-		return data_list
-			
-
+		return data_list		
+	
 	def get_tweets_stream_with_keywords(self, keywords, **kwargs):
-		
+		"""
+		get a stream of tweets having the provided keywords (can have emojis)
+		use 16 or 32 bit codes for unicode (e.g. emoji='\U0001F602')
+		Spaces are ANDs, commas are ORs
+		pass a data list to append stream data to
+		"""		
 		file_name=kwargs.get('file_name','stream_data')
 		lang=kwargs.get('lang','en')
 		add_timestamp=kwargs.get('add_timestamp',True)
 		max_tweets=kwargs.get('max_tweets',20)
+		save_to_files=kwargs.get('save_to_files',True)
+		data_handler=kwargs.get('data_handler',None)
 		data_list=kwargs.get('data_list',None)
-		"""get a stream of tweets having the provided keywords (can have emojis)"""
-		stream = self.make_stream_object(file_name, lang=lang, add_timestamp=add_timestamp, max_tweets=max_tweets, data_list=data_list)
+		stream = self.make_stream_object(file_name, lang=lang, add_timestamp=add_timestamp, max_tweets=max_tweets, save_to_files=save_to_files, data_handler=data_handler, data_list=data_list)
 		stream.filter(track=keywords)
 		return data_list
-
-	def search_for_tweets_with_keywords(self, keywords, lang='en', num_per_keyword=20, result_type='mixed'):
-		"""search for tweets having the provided keyword(s) (can't have emojis)"""
+	
+	def search_for_tweets_with_keywords(self, keywords, lang='en', num_per_keyword=20, result_type='mixed', save_to_files=True):
+		"""
+		search for tweets having the provided keyword(s) (can't have emojis)
+		result_type: mixed, recent or popular
+		"""
 		total_keyworded_tweets = []
 		for keyword in keywords :
 			keyworded_tweets = self.api.search(keyword, count=num_per_keyword, language=[lang], result_type=result_type)
 			total_keyworded_tweets.extend(keyworded_tweets)
+		if save_to_files: self.store_list_of_objects(total_keyworded_tweets)
 		return total_keyworded_tweets
-		
-	def get_tweets_with_ids(self, ids, batch_size=100):
+	
+	def get_tweets_with_ids(self, ids, batch_size=100, save_to_files=True):
 		"""returns full Tweet objects, specified by the ids parameter, max batch_size is 100"""
 		tweet_objects = [];
 		for i in range(len(ids)//batch_size+bool(len(ids)%batch_size)):
 			ids_batch = ids[i*batch_size:min(len(ids), (i+1)*batch_size)]
 			tweet_objects += self.api.statuses_lookup(ids_batch)
+		if save_to_files: self.store_list_of_objects(tweet_objects)
 		return tweet_objects
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+	
