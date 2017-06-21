@@ -19,7 +19,7 @@ class StreamDataStorage():
 		self.stream_data_clean = open('Data/' + clean_file_name, 'w', encoding='utf-8-sig')
 		self.sdata_csv_writer = csv.writer(self.stream_data_clean, lineterminator='\n')
 		
-	def append(self, data):
+	def write(self, data):
 		'''receives a json tweet string and write it to the files'''
 		tweet_json=json.loads(data)
 		try:
@@ -38,7 +38,7 @@ class StreamDataStorage():
 
 class StdOutListener(StreamListener):
 	'''specifies how tweet json strings from a tweepy stream are handled'''
-	def __init__(self, max_tweets=-1, storage_agent=None, data_handler = None, data_list=None):
+	def __init__(self, max_tweets=[-1], storage_agent=None, data_handler = None, data_list=None):
 		'''sets the object's data handler'''
 		self.count=0
 		self.max_tweets=max_tweets
@@ -49,15 +49,15 @@ class StdOutListener(StreamListener):
 	def on_data(self, data):
 		'''accepts a tweet json string and sends it to the available handlers'''
 		no_error = True
-		if self.storage_agent is not None: no_error=self.storage_agent.append(data)
+		if self.storage_agent is not None: no_error=self.storage_agent.write(data)
 		try:
-			if self.data_handler is not None: no_error=no_error and self.data_handler.append(data)
+			if self.data_handler is not None: no_error=no_error and self.data_handler.put(data)
 		except AttributeError as err:
-			raise AttributeError("please use a data_handler object that has a method append(data_string)")
+			raise AttributeError("please use a data_handler object that has a method put(data)")
 		if no_error is not False:
 			if (self.data_list is not None): self.data_list.append(data)
 			self.count+=1
-			if self.max_tweets!=-1 and self.count>=self.max_tweets:
+			if self.max_tweets[0]!=-1 and self.count>=self.max_tweets[0]:
 				del(self.storage_agent)
 				return False
 		return True
@@ -98,7 +98,7 @@ class TwitterAgent():
 		"""initializes a stream and its data handlers."""
 		lang=kwargs.get('lang','en')
 		add_timestamp=kwargs.get('add_timestamp',True)
-		max_tweets=kwargs.get('max_tweets',20)
+		max_tweets=kwargs.get('max_tweets',[20])
 		save_to_files=kwargs.get('save_to_files',True)
 		data_handler=kwargs.get('data_handler',None)
 		data_list=kwargs.get('data_list',None)
@@ -134,12 +134,13 @@ class TwitterAgent():
 	def get_sample_tweets_stream(self, **kwargs):
 		"""
 		get a sample from the stream of tweets flowing through Twitter.
-		optionally pass a data_handler object with method append(data)
+		optionally pass a data_handler object with method put(data)
+		to stop the stream at any time set max_tweets[0]=0
 		"""
 		file_name=kwargs.get('file_name', 'sample_stream_data')
 		lang=kwargs.get('lang','en')
 		add_timestamp=kwargs.get('add_timestamp',True)
-		max_tweets=kwargs.get('max_tweets',20)
+		max_tweets=kwargs.get('max_tweets',[20])
 		save_to_files=kwargs.get('save_to_files',True)
 		data_handler=kwargs.get('data_handler',None)
 		data_list=kwargs.get('data_list',None)
@@ -150,7 +151,8 @@ class TwitterAgent():
 	def get_tweets_stream_with_keywords(self, keywords, **kwargs):
 		"""
 		get a stream of tweets having the provided keywords (can have emojis)
-		optionally pass a data_handler object with method append(data)
+		optionally pass a data_handler object with method put(data)
+		to stop the stream at any time set max_tweets[0]=0
 		use 16 or 32 bit codes for unicode (e.g. emoji='\U0001F602')
 		Spaces are ANDs, commas are ORs
 		pass a data list to append stream data to
@@ -158,7 +160,7 @@ class TwitterAgent():
 		file_name=kwargs.get('file_name','stream_data')
 		lang=kwargs.get('lang','en')
 		add_timestamp=kwargs.get('add_timestamp',True)
-		max_tweets=kwargs.get('max_tweets',20)
+		max_tweets=kwargs.get('max_tweets',[20])
 		save_to_files=kwargs.get('save_to_files',True)
 		data_handler=kwargs.get('data_handler',None)
 		data_list=kwargs.get('data_list',None)
