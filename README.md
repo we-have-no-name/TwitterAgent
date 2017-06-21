@@ -29,8 +29,8 @@ agent = TwitterAgent.TwitterAgent()
 agent.get_sample_tweets_stream()
 # get data with specific keywords
 agent.get_with_keywords(['play'], 100)
-# get stream data with specific keywords
+# get stream data with specific keywords (emoji)
 agent.get_tweets_stream_with_keywords(['\U0001F602'])
-# get stream data with specific keywords (phrases)
+# get stream data with specific keywords (multiple keywords)
 agent.get_tweets_stream_with_keywords(['the are'])
 ```
