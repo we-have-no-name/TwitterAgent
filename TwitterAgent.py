@@ -69,7 +69,7 @@ class StdOutListener(StreamListener):
 class TwitterAgent():
 	'''
 	TwitterAgent is a simple class that works as a wrapper for tweepy
-	for dealing with tweets and data from twitter and making your own dataset
+	for dealing with data from twitter and making your own dataset
 	functions:
 		make_stream_object : make a tweepy streemobject
 		get_sample_tweets_stream :  get realtime tweets
@@ -79,7 +79,7 @@ class TwitterAgent():
 
 	'''
 	def __init__(self, config_file='config.json'):
-		'''initializes authentication for the twitter API'''
+		'''initializes authorization data for the twitter API'''
 		try:
 			with open(config_file) as json_config_file:
 				data = json.load(json_config_file)

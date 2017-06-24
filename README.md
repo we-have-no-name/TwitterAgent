@@ -25,10 +25,10 @@ agent = TwitterAgent("config.json")
 ```python
 import TwitterAgent
 agent = TwitterAgent.TwitterAgent()
-# get sample data
+# get a sample stream of tweets
 agent.get_sample_tweets_stream()
-# get data with specific keywords
-agent.get_with_keywords(['play'], 100)
+# search for tweets with specific keywords
+agent.search_for_tweets_with_keywords(['play'], num_per_keyword=100)
 # get stream data with specific keywords (emoji)
 agent.get_tweets_stream_with_keywords(['\U0001F602'])
 # get stream data with specific keywords (multiple keywords)
