@@ -96,14 +96,14 @@ class TwitterAgent():
 	
 	def make_stream_object(self, file_name,**kwargs):
 		"""initializes a stream and its data handlers."""
-		lang=kwargs.get('lang','')
+		lang=kwargs.pop('lang','')
 		add_timestamp=kwargs.pop('add_timestamp',True)
 		max_tweets=kwargs.pop('max_tweets',[20])
 		save_to_files=kwargs.pop('save_to_files',True)
 		data_handler=kwargs.pop('data_handler',None)
 		data_list=kwargs.pop('data_list',None)
 		if kwargs:
-			raise TypeError("'{}' is an invalid keyword argument for this function".format(next(iter(kwargs))[0]))
+			raise TypeError("'{}' is an invalid keyword argument for this function".format(next(iter(kwargs))))
 
 		storage_agent=None
 		if save_to_files:
@@ -147,7 +147,7 @@ class TwitterAgent():
 		data_handler=kwargs.pop('data_handler',None)
 		data_list=kwargs.pop('data_list',None)
 		if kwargs:
-			raise TypeError("'{}' is an invalid keyword argument for this function".format(next(iter(kwargs))[0]))
+			raise TypeError("'{}' is an invalid keyword argument for this function".format(next(iter(kwargs))))
 		stream = self.make_stream_object(file_name, lang=lang, add_timestamp=add_timestamp, max_tweets=max_tweets, save_to_files=save_to_files, data_handler=data_handler, data_list=data_list)
 		stream.sample()
 		return data_list		
@@ -169,7 +169,7 @@ class TwitterAgent():
 		data_handler=kwargs.pop('data_handler',None)
 		data_list=kwargs.pop('data_list',None)
 		if kwargs:
-			raise TypeError("'{}' is an invalid keyword argument for this function".format(next(iter(kwargs))[0]))
+			raise TypeError("'{}' is an invalid keyword argument for this function".format(next(iter(kwargs))))
 		stream = self.make_stream_object(file_name, lang=lang, add_timestamp=add_timestamp, max_tweets=max_tweets, save_to_files=save_to_files, data_handler=data_handler, data_list=data_list)
 		stream.filter(track=keywords)
 		return data_list
